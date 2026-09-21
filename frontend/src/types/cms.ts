@@ -68,3 +68,13 @@ export interface ContactDetailsContent {
   email: string;
   phone: string;
 }
+
+/**
+ * Admin-managed background images, one optional "images" section per page.
+ * A missing key means "use the built-in default"; an empty string means "the admin removed it".
+ */
+export interface ImagesContent {
+  heroBackground?: string; // home
+  ctaBackground?: string; // home, closing banner
+  headerBackground?: string; // about + contact page headers
+}

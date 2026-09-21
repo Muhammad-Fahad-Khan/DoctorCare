@@ -8,6 +8,7 @@ import { DoctorsModule } from './doctors/doctors.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { GroqModule } from './groq/groq.module';
 import { ContactModule } from './contact/contact.module';
+import { UploadsModule } from './uploads/uploads.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ContactModule } from './contact/contact.module';
     AppointmentsModule,
     GroqModule,
     ContactModule,
+    UploadsModule,
   ],
 })
 export class AppModule {}

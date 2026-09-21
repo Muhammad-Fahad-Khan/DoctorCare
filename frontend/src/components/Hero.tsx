@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Bot, CalendarCheck, CheckCircle2, Sparkles, Star, Video } from 'lucide-react';
 import { HeroContent } from '../types/cms';
+import { BackgroundImage } from './BackgroundImage';
 
 const TRUST = ['Verified doctors', 'Private & secure', 'No waiting rooms'];
 
@@ -66,9 +67,11 @@ function HeroVisual() {
   );
 }
 
-export function Hero({ content }: { content: HeroContent }) {
+export function Hero({ content, backgroundImage }: { content: HeroContent; backgroundImage?: string }) {
   return (
     <section className="relative overflow-hidden px-6 pb-20 pt-14 sm:pt-20">
+      <BackgroundImage src={backgroundImage} overlay="bg-gradient-to-b from-white/55 via-white/35 to-surface" />
+
       {/* ambient background */}
       <div className="bg-dots pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black,transparent_70%)]" aria-hidden />
       <div

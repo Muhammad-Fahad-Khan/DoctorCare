@@ -1,8 +1,10 @@
 import { StoryContent } from '../types/cms';
+import { BackgroundImage } from './BackgroundImage';
 
-export function Story({ content }: { content: StoryContent }) {
+export function Story({ content, backgroundImage }: { content: StoryContent; backgroundImage?: string }) {
   return (
     <section className="relative overflow-hidden px-6 pb-10 pt-16 sm:pt-24">
+      <BackgroundImage src={backgroundImage} overlay="bg-gradient-to-b from-white/50 via-white/30 to-surface" />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[560px] -translate-x-1/2 rounded-full blur-3xl"
         style={{ background: 'radial-gradient(circle, rgba(241,188,228,0.55), transparent 70%)' }}

@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CmsPageResponse, StoryContent, StatsContent } from '../types/cms';
+import { CmsPageResponse, ImagesContent, StoryContent, StatsContent } from '../types/cms';
+import { pickImage } from '../lib/images';
 import { Story } from '../components/Story';
 import { StatsCounters } from '../components/StatsCounters';
 
-function renderSection(section: CmsPageResponse['sections'][number]) {
+function renderSection(section: CmsPageResponse['sections'][number], images?: ImagesContent) {
   switch (section.key) {
     case 'story':
-      return <Story key={section.key} content={section.content as StoryContent} />;
+      return (
+        <Story
+          key={section.key}
+          content={section.content as StoryContent}
+          backgroundImage={pickImage(images, 'headerBackground')}
+        />
+      );
     case 'stats':
       return <StatsCounters key={section.key} content={section.content as StatsContent} />;
     default:
@@ -34,5 +41,7 @@ export function About() {
     );
   }
 
-  return <div>{[...page.sections].sort((a, b) => a.order - b.order).map(renderSection)}</div>;
+  const images = page.sections.find((s) => s.key === 'images')?.content as ImagesContent | undefined;
+
+  return <div>{[...page.sections].sort((a, b) => a.order - b.order).map((s) => renderSection(s, images))}</div>;
 }

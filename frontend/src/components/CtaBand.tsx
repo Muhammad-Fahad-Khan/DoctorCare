@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { BackgroundImage } from './BackgroundImage';
 
 const DASHBOARD_PATH = { PATIENT: '/patient', DOCTOR: '/doctor', ADMIN: '/admin' } as const;
 
-export function CtaBand() {
+export function CtaBand({ backgroundImage }: { backgroundImage?: string }) {
   const { user } = useAuth();
 
   return (
     <section className="px-6 pb-10 pt-4">
       <div className="relative mx-auto max-w-5xl overflow-hidden rounded-[2rem] bg-brand-gradient px-8 py-14 text-center text-white shadow-glow-magenta sm:px-14">
+        <BackgroundImage src={backgroundImage} overlay="bg-brand-gradient opacity-[0.86]" />
         <div className="bg-dots pointer-events-none absolute inset-0 opacity-30 [filter:invert(1)]" aria-hidden />
         <div
           className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full blur-3xl"

@@ -48,7 +48,8 @@ export default {
       animation: {
         float: 'float 6s ease-in-out infinite',
         'float-slow': 'float 8s ease-in-out infinite',
-        'fade-up': 'fade-up 0.6s cubic-bezier(0.16,1,0.3,1) both',
+        // `backwards` (not `both`): once finished the element keeps no transform, so it can't trap fixed-position children.
+        'fade-up': 'fade-up 0.6s cubic-bezier(0.16,1,0.3,1) backwards',
         blob: 'blob 12s ease-in-out infinite',
       },
     },

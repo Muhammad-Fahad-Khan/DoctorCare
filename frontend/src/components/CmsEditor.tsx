@@ -17,6 +17,7 @@ import {
   FaqContent,
   FeaturesContent,
   HeroContent,
+  ImagesContent,
   StatsContent,
   StoryContent,
   TestimonialsContent,
@@ -31,6 +32,7 @@ import {
   StoryEditor,
   TestimonialsEditor,
 } from './cms/sections';
+import { ImagesEditor } from './cms/ImagesEditor';
 
 type Slug = 'home' | 'about' | 'contact';
 
@@ -47,11 +49,11 @@ const DEFAULTS: Record<string, unknown> = {
 };
 
 const TABS = [
-  { id: 'home', label: 'Home', icon: Home, slug: 'home', viewPath: '/', blurb: 'Hero banner, AI checker banner and feature cards.' },
+  { id: 'home', label: 'Home', icon: Home, slug: 'home', viewPath: '/', blurb: 'Hero banner, AI checker banner, feature cards and background images.' },
   { id: 'faqs', label: 'FAQs', icon: HelpCircle, slug: 'home', viewPath: '/', blurb: 'Questions and answers shown on the home page.' },
   { id: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote, slug: 'home', viewPath: '/', blurb: 'Patient quotes shown on the home page.' },
-  { id: 'about', label: 'About', icon: Info, slug: 'about', viewPath: '/about', blurb: 'Our story and statistics.' },
-  { id: 'contact', label: 'Contact', icon: Mail, slug: 'contact', viewPath: '/contact', blurb: 'Address, email and phone.' },
+  { id: 'about', label: 'About', icon: Info, slug: 'about', viewPath: '/about', blurb: 'Our story, statistics and header image.' },
+  { id: 'contact', label: 'Contact', icon: Mail, slug: 'contact', viewPath: '/contact', blurb: 'Address, email, phone and header image.' },
 ] as const satisfies readonly { id: string; label: string; icon: LucideIcon; slug: Slug; viewPath: string; blurb: string }[];
 
 type TabId = (typeof TABS)[number]['id'];
@@ -148,6 +150,7 @@ function TabBody({ tabId, state, onRetry }: { tabId: TabId; state: PageState; on
   }
 
   const contentFor = <T,>(key: string) => (state.sections.find((s) => s.key === key)?.content ?? DEFAULTS[key]) as T;
+  const optionalContent = <T,>(key: string) => state.sections.find((s) => s.key === key)?.content as T | undefined;
   const orderFor = (key: string, fallback: number) => state.sections.find((s) => s.key === key)?.order ?? fallback;
 
   switch (tabId) {
@@ -157,6 +160,15 @@ function TabBody({ tabId, state, onRetry }: { tabId: TabId; state: PageState; on
           <HeroEditor initial={contentFor<HeroContent>('hero')} order={orderFor('hero', 0)} />
           <ChatbotIntroEditor initial={contentFor<ChatbotIntroContent>('chatbotIntro')} order={orderFor('chatbotIntro', 1)} />
           <FeaturesEditor initial={contentFor<FeaturesContent>('features')} order={orderFor('features', 2)} />
+          <ImagesEditor
+            pageSlug="home"
+            initial={optionalContent<ImagesContent>('images')}
+            description="Pictures behind the top banner and the closing call-to-action on the home page."
+            slots={[
+              { key: 'heroBackground', label: 'Top banner background', hint: 'Behind the main heading at the top of the home page.' },
+              { key: 'ctaBackground', label: 'Bottom banner background', hint: 'Shown faintly behind the purple "Ready to feel better?" banner.' },
+            ]}
+          />
         </>
       );
     case 'faqs':
@@ -168,9 +180,25 @@ function TabBody({ tabId, state, onRetry }: { tabId: TabId; state: PageState; on
         <>
           <StoryEditor initial={contentFor<StoryContent>('story')} order={orderFor('story', 0)} />
           <StatsEditor initial={contentFor<StatsContent>('stats')} order={orderFor('stats', 1)} />
+          <ImagesEditor
+            pageSlug="about"
+            initial={optionalContent<ImagesContent>('images')}
+            description="The picture behind the heading at the top of the About page."
+            slots={[{ key: 'headerBackground', label: 'Page header background', hint: 'Behind "Our story" at the top of the page.' }]}
+          />
         </>
       );
     case 'contact':
-      return <ContactDetailsEditor initial={contentFor<ContactDetailsContent>('contactDetails')} order={orderFor('contactDetails', 0)} />;
+      return (
+        <>
+          <ContactDetailsEditor initial={contentFor<ContactDetailsContent>('contactDetails')} order={orderFor('contactDetails', 0)} />
+          <ImagesEditor
+            pageSlug="contact"
+            initial={optionalContent<ImagesContent>('images')}
+            description="The picture behind the heading at the top of the Contact page."
+            slots={[{ key: 'headerBackground', label: 'Page header background', hint: 'Behind "Get in touch" at the top of the page.' }]}
+          />
+        </>
+      );
   }
 }

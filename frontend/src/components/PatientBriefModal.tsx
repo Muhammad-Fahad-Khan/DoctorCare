@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { X, AlertCircle, Video, CheckCircle2, MessageSquareText, Siren } from 'lucide-react';
 import { api, AppointmentResponse } from '../lib/api';
@@ -69,7 +70,9 @@ export function PatientBriefModal({
   const urlDirty = meetingUrl.trim() !== savedUrl;
   const inWindow = isInJoinWindow(appointment);
 
-  return (
+  // Portalled to <body> so no transformed / blurred ancestor (dashboard tab wrapper, cards) can
+  // turn `fixed` into "fixed relative to that ancestor" and push the panel out of place.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-end bg-royal/30 backdrop-blur-sm">
       <div className="glass-card h-full w-full max-w-md overflow-y-auto rounded-none p-6 shadow-2xl sm:rounded-l-2xl">
         <div className="flex items-center justify-between">
@@ -366,6 +369,7 @@ export function PatientBriefModal({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -7,6 +7,7 @@ import {
   FeaturesContent,
   TestimonialsContent,
   FaqContent,
+  ImagesContent,
 } from '../types/cms';
 import { Hero } from '../components/Hero';
 import { ChatbotEntry } from '../components/ChatbotEntry';
@@ -15,6 +16,7 @@ import { Testimonials } from '../components/Testimonials';
 import { FaqAccordion } from '../components/FaqAccordion';
 import { HowItWorks } from '../components/HowItWorks';
 import { CtaBand } from '../components/CtaBand';
+import { pickImage } from '../lib/images';
 
 /**
  * Section-key -> renderer registry. This is the whole "dynamic CMS" contract:
@@ -22,10 +24,16 @@ import { CtaBand } from '../components/CtaBand';
  * HOW each section key is drawn. Adding a new section type is one entry here
  * plus one component — nothing else on this page changes.
  */
-function renderSection(section: CmsPageResponse['sections'][number]) {
+function renderSection(section: CmsPageResponse['sections'][number], images?: ImagesContent) {
   switch (section.key) {
     case 'hero':
-      return <Hero key={section.key} content={section.content as HeroContent} />;
+      return (
+        <Hero
+          key={section.key}
+          content={section.content as HeroContent}
+          backgroundImage={pickImage(images, 'heroBackground')}
+        />
+      );
     case 'chatbotIntro':
       return <ChatbotEntry key={section.key} content={section.content as ChatbotIntroContent} />;
     case 'features':
@@ -66,16 +74,18 @@ export function Home() {
     );
   }
 
+  const images = page.sections.find((s) => s.key === 'images')?.content as ImagesContent | undefined;
+
   return (
     <div>
       {[...page.sections]
         .sort((a, b) => a.order - b.order)
         .flatMap((section) => {
-          const node = renderSection(section);
+          const node = renderSection(section, images);
           // "How it works" is static (not CMS-managed): it sits right after the features grid.
           return section.key === 'features' ? [node, <HowItWorks key="how-it-works" />] : [node];
         })}
-      <CtaBand />
+      <CtaBand backgroundImage={pickImage(images, 'ctaBackground')} />
     </div>
   );
 }

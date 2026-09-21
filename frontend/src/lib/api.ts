@@ -13,6 +13,15 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/**
+ * Images uploaded by the admin are stored as site-relative paths (/uploads/abc.jpg) that the API serves.
+ * Built-in library images (/backgrounds/...) and pasted https links are used exactly as given.
+ */
+export function assetUrl(path?: string): string {
+  if (!path) return '';
+  return path.startsWith('/uploads/') ? `${BASE_URL}${path}` : path;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getToken();
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -122,6 +131,23 @@ export interface ContactInquiry {
 }
 
 export const api = {
+  // Admin: upload a website image. Sent as multipart, so the JSON Content-Type header is deliberately not set.
+  uploadImage: async (file: File): Promise<{ url: string }> => {
+    const token = getToken();
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch(`${BASE_URL}/admin/uploads/image`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      throw new Error(body?.message ?? `Upload failed (${res.status}).`);
+    }
+    return res.json();
+  },
+
   getPage: (slug: string) => request<CmsPageResponse>(`/cms/pages/${slug}`),
 
   // Admin: CMS editor writes go through this — same slug/section shape the public GET returns.
