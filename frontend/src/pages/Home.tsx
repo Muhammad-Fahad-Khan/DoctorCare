@@ -13,6 +13,8 @@ import { ChatbotEntry } from '../components/ChatbotEntry';
 import { FeaturesGrid } from '../components/FeaturesGrid';
 import { Testimonials } from '../components/Testimonials';
 import { FaqAccordion } from '../components/FaqAccordion';
+import { HowItWorks } from '../components/HowItWorks';
+import { CtaBand } from '../components/CtaBand';
 
 /**
  * Section-key -> renderer registry. This is the whole "dynamic CMS" contract:
@@ -64,5 +66,16 @@ export function Home() {
     );
   }
 
-  return <div>{[...page.sections].sort((a, b) => a.order - b.order).map(renderSection)}</div>;
+  return (
+    <div>
+      {[...page.sections]
+        .sort((a, b) => a.order - b.order)
+        .flatMap((section) => {
+          const node = renderSection(section);
+          // "How it works" is static (not CMS-managed): it sits right after the features grid.
+          return section.key === 'features' ? [node, <HowItWorks key="how-it-works" />] : [node];
+        })}
+      <CtaBand />
+    </div>
+  );
 }

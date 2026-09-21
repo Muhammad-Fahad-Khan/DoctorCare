@@ -1,305 +1,41 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Save, Check } from 'lucide-react';
+import {
+  ExternalLink,
+  HelpCircle,
+  Home,
+  Info,
+  LucideIcon,
+  Mail,
+  MessageSquareQuote,
+  RefreshCw,
+} from 'lucide-react';
 import { api } from '../lib/api';
 import {
-  CmsPageResponse,
-  HeroContent,
   ChatbotIntroContent,
-  FeaturesContent,
-  TestimonialsContent,
-  FaqContent,
-  FeatureItem,
-  TestimonialItem,
-  FaqItem,
-  StoryContent,
-  StatsContent,
-  StatItem,
+  CmsPageResponse,
   ContactDetailsContent,
+  FaqContent,
+  FeaturesContent,
+  HeroContent,
+  StatsContent,
+  StoryContent,
+  TestimonialsContent,
 } from '../types/cms';
+import {
+  ChatbotIntroEditor,
+  ContactDetailsEditor,
+  FaqEditor,
+  FeaturesEditor,
+  HeroEditor,
+  StatsEditor,
+  StoryEditor,
+  TestimonialsEditor,
+} from './cms/sections';
 
-const inputCls =
-  'mt-1.5 w-full rounded-xl border border-royal/10 bg-white/70 px-3.5 py-2.5 text-sm outline-none transition-all duration-300 ease-docucare focus:border-magenta/50 focus:ring-2 focus:ring-magenta/20';
-
-function SaveBar({ onSave, saving, saved }: { onSave: () => void; saving: boolean; saved: boolean }) {
-  return (
-    <button onClick={onSave} disabled={saving} className="btn-primary mt-4 !px-4 !py-2 text-xs disabled:opacity-50">
-      {saved ? <Check size={13} className="mr-1.5 inline" /> : <Save size={13} className="mr-1.5 inline" />}
-      {saving ? 'Saving…' : saved ? 'Saved' : 'Save section'}
-    </button>
-  );
-}
-
-function useSectionSave(pageSlug: string, sectionKey: string, order: number) {
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function save(content: object) {
-    setSaving(true);
-    setSaved(false);
-    setError(null);
-    try {
-      await api.upsertCmsSection(pageSlug, { sectionKey, content: content as Record<string, unknown>, order });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save this section.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return { save, saving, saved, error };
-}
-
-function HeroEditor({ initial, order }: { initial: HeroContent; order: number }) {
-  const [content, setContent] = useState(initial);
-  const { save, saving, saved, error } = useSectionSave('home', 'hero', order);
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Hero</p>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Heading
-        <input value={content.heading} onChange={(e) => setContent({ ...content, heading: e.target.value })} className={inputCls} />
-      </label>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Subheading
-        <textarea rows={2} value={content.subheading} onChange={(e) => setContent({ ...content, subheading: e.target.value })} className={inputCls} />
-      </label>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        CTA button label
-        <input value={content.ctaLabel} onChange={(e) => setContent({ ...content, ctaLabel: e.target.value })} className={inputCls} />
-      </label>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save(content)} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function ChatbotIntroEditor({ initial, order }: { initial: ChatbotIntroContent; order: number }) {
-  const [content, setContent] = useState(initial);
-  const { save, saving, saved, error } = useSectionSave('home', 'chatbotIntro', order);
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">AI Chatbot intro text</p>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Prompt shown to patients
-        <textarea rows={2} value={content.promptText} onChange={(e) => setContent({ promptText: e.target.value })} className={inputCls} />
-      </label>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save(content)} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function FeaturesEditor({ initial, order }: { initial: FeaturesContent; order: number }) {
-  const [items, setItems] = useState<FeatureItem[]>(initial.items);
-  const { save, saving, saved, error } = useSectionSave('home', 'features', order);
-
-  function update(i: number, patch: Partial<FeatureItem>) {
-    setItems(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-  }
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Features grid</p>
-      <div className="mt-3 space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="rounded-xl border border-royal/10 p-3">
-            <div className="flex items-center gap-2">
-              <input value={item.icon} onChange={(e) => update(i, { icon: e.target.value })} placeholder="Icon (lucide name)" className={`${inputCls} !mt-0 flex-1`} />
-              <input value={item.title} onChange={(e) => update(i, { title: e.target.value })} placeholder="Title" className={`${inputCls} !mt-0 flex-[2]`} />
-              <button onClick={() => setItems(items.filter((_, idx) => idx !== i))} className="text-royal/40 hover:text-red-600">
-                <Trash2 size={15} />
-              </button>
-            </div>
-            <textarea
-              rows={2}
-              value={item.description}
-              onChange={(e) => update(i, { description: e.target.value })}
-              placeholder="Description"
-              className={`${inputCls} !mt-2`}
-            />
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setItems([...items, { icon: 'Star', title: '', description: '' }])}
-        className="btn-secondary mt-3 !px-3 !py-1.5 text-xs"
-      >
-        <Plus size={13} className="mr-1 inline" /> Add feature
-      </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save({ items })} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function TestimonialsEditor({ initial, order }: { initial: TestimonialsContent; order: number }) {
-  const [items, setItems] = useState<TestimonialItem[]>(initial.items);
-  const { save, saving, saved, error } = useSectionSave('home', 'testimonials', order);
-
-  function update(i: number, patch: Partial<TestimonialItem>) {
-    setItems(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-  }
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Testimonials</p>
-      <div className="mt-3 space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="rounded-xl border border-royal/10 p-3">
-            <div className="flex items-center gap-2">
-              <input value={item.name} onChange={(e) => update(i, { name: e.target.value })} placeholder="Patient name" className={`${inputCls} !mt-0 flex-1`} />
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={item.rating}
-                onChange={(e) => update(i, { rating: Number(e.target.value) })}
-                className={`${inputCls} !mt-0 w-16`}
-              />
-              <label className="flex items-center gap-1.5 text-xs text-royal/60">
-                <input type="checkbox" checked={item.verified} onChange={(e) => update(i, { verified: e.target.checked })} />
-                Verified
-              </label>
-              <button onClick={() => setItems(items.filter((_, idx) => idx !== i))} className="text-royal/40 hover:text-red-600">
-                <Trash2 size={15} />
-              </button>
-            </div>
-            <textarea rows={2} value={item.quote} onChange={(e) => update(i, { quote: e.target.value })} placeholder="Quote" className={`${inputCls} !mt-2`} />
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setItems([...items, { name: '', quote: '', rating: 5, verified: false }])}
-        className="btn-secondary mt-3 !px-3 !py-1.5 text-xs"
-      >
-        <Plus size={13} className="mr-1 inline" /> Add testimonial
-      </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save({ items })} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function FaqEditor({ initial, order }: { initial: FaqContent; order: number }) {
-  const [items, setItems] = useState<FaqItem[]>(initial.items);
-  const { save, saving, saved, error } = useSectionSave('home', 'faq', order);
-
-  function update(i: number, patch: Partial<FaqItem>) {
-    setItems(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-  }
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">FAQ</p>
-      <div className="mt-3 space-y-3">
-        {items.map((item, i) => (
-          <div key={i} className="rounded-xl border border-royal/10 p-3">
-            <div className="flex items-center gap-2">
-              <input value={item.question} onChange={(e) => update(i, { question: e.target.value })} placeholder="Question" className={`${inputCls} !mt-0 flex-1`} />
-              <button onClick={() => setItems(items.filter((_, idx) => idx !== i))} className="text-royal/40 hover:text-red-600">
-                <Trash2 size={15} />
-              </button>
-            </div>
-            <textarea rows={2} value={item.answer} onChange={(e) => update(i, { answer: e.target.value })} placeholder="Answer" className={`${inputCls} !mt-2`} />
-          </div>
-        ))}
-      </div>
-      <button
-        onClick={() => setItems([...items, { question: '', answer: '' }])}
-        className="btn-secondary mt-3 !px-3 !py-1.5 text-xs"
-      >
-        <Plus size={13} className="mr-1 inline" /> Add FAQ item
-      </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save({ items })} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function StoryEditor({ initial, order }: { initial: StoryContent; order: number }) {
-  const [content, setContent] = useState(initial);
-  const { save, saving, saved, error } = useSectionSave('about', 'story', order);
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Our Story</p>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Heading
-        <input value={content.heading} onChange={(e) => setContent({ ...content, heading: e.target.value })} className={inputCls} />
-      </label>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Body
-        <textarea rows={4} value={content.body} onChange={(e) => setContent({ ...content, body: e.target.value })} className={inputCls} />
-      </label>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save(content)} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function StatsEditor({ initial, order }: { initial: StatsContent; order: number }) {
-  const [items, setItems] = useState<StatItem[]>(initial.items);
-  const { save, saving, saved, error } = useSectionSave('about', 'stats', order);
-
-  function update(i: number, patch: Partial<StatItem>) {
-    setItems(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
-  }
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Statistics</p>
-      <div className="mt-3 space-y-2">
-        {items.map((item, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input value={item.value} onChange={(e) => update(i, { value: e.target.value })} placeholder="Value (e.g. 1,000+)" className={`${inputCls} !mt-0 w-32`} />
-            <input value={item.label} onChange={(e) => update(i, { label: e.target.value })} placeholder="Label" className={`${inputCls} !mt-0 flex-1`} />
-            <button onClick={() => setItems(items.filter((_, idx) => idx !== i))} className="text-royal/40 hover:text-red-600">
-              <Trash2 size={15} />
-            </button>
-          </div>
-        ))}
-      </div>
-      <button onClick={() => setItems([...items, { label: '', value: '' }])} className="btn-secondary mt-3 !px-3 !py-1.5 text-xs">
-        <Plus size={13} className="mr-1 inline" /> Add stat
-      </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save({ items })} saving={saving} saved={saved} />
-    </div>
-  );
-}
-
-function ContactDetailsEditor({ initial, order }: { initial: ContactDetailsContent; order: number }) {
-  const [content, setContent] = useState(initial);
-  const { save, saving, saved, error } = useSectionSave('contact', 'contactDetails', order);
-
-  return (
-    <div className="interactive-card p-5">
-      <p className="text-sm font-semibold text-royal">Contact details</p>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Address
-        <input value={content.address} onChange={(e) => setContent({ ...content, address: e.target.value })} className={inputCls} />
-      </label>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Email
-        <input value={content.email} onChange={(e) => setContent({ ...content, email: e.target.value })} className={inputCls} />
-      </label>
-      <label className="mt-3 block text-xs font-medium text-royal/60">
-        Phone
-        <input value={content.phone} onChange={(e) => setContent({ ...content, phone: e.target.value })} className={inputCls} />
-      </label>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-      <SaveBar onSave={() => save(content)} saving={saving} saved={saved} />
-    </div>
-  );
-}
+type Slug = 'home' | 'about' | 'contact';
 
 // Defaults used if a section doesn't exist in the DB yet (first-time setup).
-const DEFAULTS: Record<string, Record<string, unknown>> = {
+const DEFAULTS: Record<string, unknown> = {
   hero: { heading: '', subheading: '', ctaLabel: 'Book Now' },
   chatbotIntro: { promptText: '' },
   features: { items: [] },
@@ -310,79 +46,131 @@ const DEFAULTS: Record<string, Record<string, unknown>> = {
   contactDetails: { address: '', email: '', phone: '' },
 };
 
-const PAGE_TABS = ['Home', 'About', 'Contact'] as const;
-const SLUG_FOR: Record<(typeof PAGE_TABS)[number], string> = { Home: 'home', About: 'about', Contact: 'contact' };
+const TABS = [
+  { id: 'home', label: 'Home', icon: Home, slug: 'home', viewPath: '/', blurb: 'Hero banner, AI checker banner and feature cards.' },
+  { id: 'faqs', label: 'FAQs', icon: HelpCircle, slug: 'home', viewPath: '/', blurb: 'Questions and answers shown on the home page.' },
+  { id: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote, slug: 'home', viewPath: '/', blurb: 'Patient quotes shown on the home page.' },
+  { id: 'about', label: 'About', icon: Info, slug: 'about', viewPath: '/about', blurb: 'Our story and statistics.' },
+  { id: 'contact', label: 'Contact', icon: Mail, slug: 'contact', viewPath: '/contact', blurb: 'Address, email and phone.' },
+] as const satisfies readonly { id: string; label: string; icon: LucideIcon; slug: Slug; viewPath: string; blurb: string }[];
+
+type TabId = (typeof TABS)[number]['id'];
+type PageState = CmsPageResponse | 'error' | undefined;
 
 export function CmsEditor() {
-  const [tab, setTab] = useState<(typeof PAGE_TABS)[number]>('Home');
-  const [page, setPage] = useState<CmsPageResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabId>('home');
+  const [pages, setPages] = useState<Record<Slug, PageState>>({ home: undefined, about: undefined, contact: undefined });
 
+  function load(slug: Slug) {
+    setPages((p) => ({ ...p, [slug]: undefined }));
+    api
+      .getPage(slug)
+      .then((page) => setPages((p) => ({ ...p, [slug]: page })))
+      .catch(() => setPages((p) => ({ ...p, [slug]: 'error' })));
+  }
+
+  // All pages load once and stay mounted, so unsaved edits survive switching between tabs.
   useEffect(() => {
-    setPage(null);
-    setError(null);
-    api.getPage(SLUG_FOR[tab]).then(setPage).catch(() => setError(`Could not load ${tab} page content.`));
-  }, [tab]);
+    (['home', 'about', 'contact'] as const).forEach(load);
+  }, []);
+
+  const active = TABS.find((t) => t.id === tab)!;
 
   return (
     <div>
-      <div className="flex gap-2">
-        {PAGE_TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-300 ease-docucare ${
-              tab === t ? 'bg-magenta text-white' : 'bg-royal/5 text-royal/60 hover:bg-royal/10'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-royal/55">
+          Pick what you want to change. Nothing goes live until you press <strong className="text-royal">Save changes</strong>.
+        </p>
+        <a
+          href={active.viewPath}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-magenta transition-opacity hover:opacity-70"
+        >
+          View live page <ExternalLink size={13} />
+        </a>
       </div>
 
+      <div role="tablist" className="mt-4 flex gap-2 overflow-x-auto pb-1">
+        {TABS.map((t) => {
+          const isActive = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => setTab(t.id)}
+              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 ease-docucare ${
+                isActive
+                  ? 'bg-royal text-white shadow-md'
+                  : 'border border-royal/10 bg-white text-royal/60 hover:border-magenta/30 hover:text-royal'
+              }`}
+            >
+              <t.icon size={15} />
+              {t.label}
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-3 text-xs text-royal/45">{active.blurb}</p>
+
       <div className="mt-5">
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {!error && !page && <p className="text-sm text-royal/50">Loading…</p>}
-        {page && <CmsEditorForm key={tab} page={page} tab={tab} />}
+        {TABS.map((t) => (
+          <div key={t.id} hidden={tab !== t.id} className="space-y-5">
+            <TabBody tabId={t.id} state={pages[t.slug]} onRetry={() => load(t.slug)} />
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function CmsEditorForm({ page, tab }: { page: CmsPageResponse; tab: (typeof PAGE_TABS)[number] }) {
-  function contentFor(key: string) {
-    return page.sections.find((s) => s.key === key)?.content ?? DEFAULTS[key];
+function TabBody({ tabId, state, onRetry }: { tabId: TabId; state: PageState; onRetry: () => void }) {
+  if (state === 'error') {
+    return (
+      <div className="glass-card flex flex-col items-center gap-3 p-10 text-center">
+        <p className="text-sm text-royal/60">Could not load this page's content. Is the API running?</p>
+        <button onClick={onRetry} className="btn-secondary !px-4 !py-2 text-xs">
+          <RefreshCw size={13} /> Try again
+        </button>
+      </div>
+    );
   }
-  function orderFor(key: string, fallback: number) {
-    return page.sections.find((s) => s.key === key)?.order ?? fallback;
+  if (!state) {
+    return (
+      <div className="space-y-4" aria-busy>
+        {[0, 1].map((i) => (
+          <div key={i} className="glass-card h-40 animate-pulse bg-royal/[0.03]" />
+        ))}
+      </div>
+    );
   }
 
-  return (
-    <div className="space-y-5">
-      <p className="text-sm text-royal/50">
-        Editing the {tab} page. Changes go live the moment you save each section.
-      </p>
+  const contentFor = <T,>(key: string) => (state.sections.find((s) => s.key === key)?.content ?? DEFAULTS[key]) as T;
+  const orderFor = (key: string, fallback: number) => state.sections.find((s) => s.key === key)?.order ?? fallback;
 
-      {tab === 'Home' && (
+  switch (tabId) {
+    case 'home':
+      return (
         <>
-          <HeroEditor initial={contentFor('hero') as HeroContent} order={orderFor('hero', 0)} />
-          <ChatbotIntroEditor initial={contentFor('chatbotIntro') as ChatbotIntroContent} order={orderFor('chatbotIntro', 1)} />
-          <FeaturesEditor initial={contentFor('features') as FeaturesContent} order={orderFor('features', 2)} />
-          <TestimonialsEditor initial={contentFor('testimonials') as TestimonialsContent} order={orderFor('testimonials', 3)} />
-          <FaqEditor initial={contentFor('faq') as FaqContent} order={orderFor('faq', 4)} />
+          <HeroEditor initial={contentFor<HeroContent>('hero')} order={orderFor('hero', 0)} />
+          <ChatbotIntroEditor initial={contentFor<ChatbotIntroContent>('chatbotIntro')} order={orderFor('chatbotIntro', 1)} />
+          <FeaturesEditor initial={contentFor<FeaturesContent>('features')} order={orderFor('features', 2)} />
         </>
-      )}
-
-      {tab === 'About' && (
+      );
+    case 'faqs':
+      return <FaqEditor initial={contentFor<FaqContent>('faq')} order={orderFor('faq', 4)} />;
+    case 'testimonials':
+      return <TestimonialsEditor initial={contentFor<TestimonialsContent>('testimonials')} order={orderFor('testimonials', 3)} />;
+    case 'about':
+      return (
         <>
-          <StoryEditor initial={contentFor('story') as StoryContent} order={orderFor('story', 0)} />
-          <StatsEditor initial={contentFor('stats') as StatsContent} order={orderFor('stats', 1)} />
+          <StoryEditor initial={contentFor<StoryContent>('story')} order={orderFor('story', 0)} />
+          <StatsEditor initial={contentFor<StatsContent>('stats')} order={orderFor('stats', 1)} />
         </>
-      )}
-
-      {tab === 'Contact' && (
-        <ContactDetailsEditor initial={contentFor('contactDetails') as ContactDetailsContent} order={orderFor('contactDetails', 0)} />
-      )}
-    </div>
-  );
+      );
+    case 'contact':
+      return <ContactDetailsEditor initial={contentFor<ContactDetailsContent>('contactDetails')} order={orderFor('contactDetails', 0)} />;
+  }
 }

@@ -2,6 +2,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User as UserIcon } from 'lucide-react';
 import { api, TriageSessionResponse } from '../lib/api';
 
+const SUGGESTIONS = [
+  'I have a headache and a mild fever',
+  'My child has a persistent cough',
+  "I have back pain that won't go away",
+];
+
 const URGENCY_STYLES: Record<string, string> = {
   Routine: 'bg-wisteria/15 text-wisteria',
   Soon: 'bg-orchid text-royal',
@@ -42,17 +48,43 @@ export function TriageChat({
   }
 
   return (
-    <div className="glass-card flex h-[560px] flex-col overflow-hidden">
-      <div className="flex-1 space-y-4 overflow-y-auto p-5">
+    <div className="glass-card flex h-[600px] flex-col overflow-hidden !rounded-3xl">
+      <div className="flex items-center gap-3 border-b border-royal/5 bg-white px-5 py-4">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-gradient text-white">
+          <Bot size={18} />
+        </span>
+        <div>
+          <p className="text-sm font-bold text-royal">AI Symptom Checker</p>
+          <p className="flex items-center gap-1.5 text-xs text-royal/50">
+            <span className="h-1.5 w-1.5 rounded-full bg-mint" /> Not a diagnosis — it just helps pick the right doctor
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-4 overflow-y-auto bg-surface/60 p-5">
         {!session && (
-          <div className="flex items-start gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-magenta/10 text-magenta">
-              <Bot size={16} />
+          <>
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-magenta/10 text-magenta">
+                <Bot size={16} />
+              </div>
+              <div className="rounded-2xl rounded-tl-sm bg-white px-4 py-2.5 text-sm text-royal/80 shadow-sm">
+                Tell me what you're feeling, in your own words — I'll help you figure out what kind of doctor to see.
+              </div>
             </div>
-            <div className="rounded-2xl rounded-tl-sm bg-royal/5 px-4 py-2.5 text-sm text-royal/80">
-              Tell me what you're feeling, in your own words — I'll help you figure out what kind of doctor to see.
+            <div className="flex flex-wrap gap-2 pl-10">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setInput(s)}
+                  className="rounded-full border border-magenta/20 bg-white px-3.5 py-1.5 text-xs font-medium text-magenta transition-all duration-300 ease-docucare hover:border-magenta/50 hover:bg-orchid/20"
+                >
+                  {s}
+                </button>
+              ))}
             </div>
-          </div>
+          </>
         )}
 
         {session?.messages.map((m, i) => (
@@ -67,8 +99,8 @@ export function TriageChat({
             <div
               className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                 m.role === 'user'
-                  ? 'rounded-tr-sm bg-magenta text-white'
-                  : 'rounded-tl-sm bg-royal/5 text-royal/80'
+                  ? 'rounded-tr-sm bg-brand-gradient text-white'
+                  : 'rounded-tl-sm bg-white text-royal/80 shadow-sm'
               }`}
             >
               {m.content}
@@ -133,18 +165,18 @@ export function TriageChat({
           e.preventDefault();
           send();
         }}
-        className="flex items-center gap-2 border-t border-royal/10 p-3"
+        className="flex items-center gap-2 border-t border-royal/5 bg-white p-3"
       >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Describe how you're feeling…"
-          className="flex-1 rounded-full border border-royal/10 bg-white/70 px-4 py-2.5 text-sm outline-none transition-all duration-300 ease-docucare focus:border-magenta/50 focus:ring-2 focus:ring-magenta/20"
+          className="input-field flex-1 !rounded-full !px-5"
         />
         <button
           type="submit"
           disabled={sending || !input.trim()}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-magenta text-white transition-all duration-300 ease-docucare hover:shadow-glow-magenta disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-gradient text-white shadow-md shadow-magenta/25 transition-all duration-300 ease-docucare hover:shadow-glow-magenta disabled:opacity-40"
         >
           <Send size={16} />
         </button>

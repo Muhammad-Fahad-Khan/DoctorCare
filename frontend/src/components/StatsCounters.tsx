@@ -26,7 +26,7 @@ function AnimatedStat({ value }: { value: string }) {
   }, [value]);
 
   return (
-    <span ref={ref} className="text-3xl font-extrabold text-magenta sm:text-4xl">
+    <span ref={ref} className="text-gradient text-4xl font-extrabold tracking-tight sm:text-5xl">
       {display}
     </span>
   );
@@ -34,12 +34,12 @@ function AnimatedStat({ value }: { value: string }) {
 
 export function StatsCounters({ content }: { content: StatsContent }) {
   return (
-    <section className="px-6 pb-16">
-      <div className="mx-auto grid max-w-3xl grid-cols-1 gap-5 sm:grid-cols-3">
+    <section className="px-6 pb-20 pt-6">
+      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-5 sm:grid-cols-3">
         {content.items.map((stat) => (
-          <div key={stat.label} className="interactive-card p-6 text-center">
+          <div key={stat.label} className="interactive-card p-8 text-center">
             <AnimatedStat value={stat.value} />
-            <p className="mt-2 text-sm text-royal/60">{stat.label}</p>
+            <p className="mt-3 text-sm font-medium text-royal/60">{stat.label}</p>
           </div>
         ))}
       </div>

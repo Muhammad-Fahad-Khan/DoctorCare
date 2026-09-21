@@ -26,9 +26,15 @@ export function Contact() {
   const details = page.sections.find((s) => s.key === 'contactDetails')?.content as ContactDetailsContent | undefined;
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
-      <h1 className="text-center text-3xl font-extrabold text-royal sm:text-4xl">Get in touch</h1>
-      <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+      <div className="text-center">
+        <span className="eyebrow">Contact</span>
+        <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-royal sm:text-5xl">
+          <span className="text-gradient">Get in touch</span>
+        </h1>
+        <p className="section-lead">Questions, feedback or partnership ideas — we'd love to hear from you.</p>
+      </div>
+      <div className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_1.4fr]">
         {details && <ContactDetails content={details} />}
         <ContactForm />
       </div>

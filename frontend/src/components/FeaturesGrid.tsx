@@ -8,23 +8,26 @@ function resolveIcon(name: string): LucideIcon {
 }
 
 export function FeaturesGrid({ content }: { content: FeaturesContent }) {
-  return (
-    <section className="px-6 py-16">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="text-center text-2xl font-bold text-royal sm:text-3xl">
-          Care built around when you need it
-        </h2>
+  if (content.items.length === 0) return null;
 
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+  return (
+    <section className="px-6 py-20">
+      <div className="mx-auto max-w-6xl">
+        <div className="text-center">
+          <span className="eyebrow">Why DocuCare</span>
+          <h2 className="section-title mt-4">Care built around when you need it</h2>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {content.items.map((item) => {
             const Icon = resolveIcon(item.icon);
             return (
-              <div key={item.title} className="interactive-card p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-wisteria/15 text-wisteria">
-                  <Icon size={20} />
+              <div key={item.title} className="interactive-card group p-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft text-magenta transition-all duration-300 ease-docucare group-hover:bg-brand-gradient group-hover:text-white group-hover:shadow-md group-hover:shadow-magenta/30">
+                  <Icon size={22} />
                 </div>
-                <h3 className="mt-4 text-sm font-semibold text-royal">{item.title}</h3>
-                <p className="mt-1.5 text-sm text-royal/65">{item.description}</p>
+                <h3 className="mt-5 text-base font-bold text-royal">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-royal/65">{item.description}</p>
               </div>
             );
           })}

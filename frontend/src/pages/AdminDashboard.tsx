@@ -1,38 +1,36 @@
 import { useState } from 'react';
+import { BrainCircuit, FileText, Inbox, UserCheck } from 'lucide-react';
 import { DoctorApprovalPanel } from '../components/DoctorApprovalPanel';
 import { CmsEditor } from '../components/CmsEditor';
 import { GroqSettingsPanel } from '../components/GroqSettingsPanel';
 import { ContactInquiriesPanel } from '../components/ContactInquiriesPanel';
+import { DashboardShell, DashboardTab } from '../components/DashboardShell';
 
-const TABS = ['Doctor Approvals', 'Website Content', 'AI Settings', 'Inquiries'] as const;
+type Tab = 'approvals' | 'content' | 'ai' | 'inquiries';
+
+const TABS: DashboardTab<Tab>[] = [
+  { id: 'approvals', label: 'Doctor Approvals', icon: UserCheck },
+  { id: 'content', label: 'Website Content', icon: FileText },
+  { id: 'ai', label: 'AI Settings', icon: BrainCircuit },
+  { id: 'inquiries', label: 'Inquiries', icon: Inbox },
+];
 
 export function AdminDashboard() {
-  const [tab, setTab] = useState<(typeof TABS)[number]>('Doctor Approvals');
+  const [tab, setTab] = useState<Tab>('approvals');
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-royal">Admin</h1>
-
-      <div className="mt-6 flex gap-2 border-b border-royal/10">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-1 pb-3 text-sm font-semibold transition-colors duration-300 ease-docucare ${
-              tab === t ? 'border-magenta text-magenta' : 'border-transparent text-royal/50 hover:text-royal'
-            }`}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-6">
-        {tab === 'Doctor Approvals' && <DoctorApprovalPanel />}
-        {tab === 'Website Content' && <CmsEditor />}
-        {tab === 'AI Settings' && <GroqSettingsPanel />}
-        {tab === 'Inquiries' && <ContactInquiriesPanel />}
-      </div>
-    </div>
+    <DashboardShell
+      eyebrow="Admin"
+      title="Control center"
+      subtitle="Approve doctors, edit the public website, configure the AI assistant and answer visitor inquiries."
+      tabs={TABS}
+      active={tab}
+      onChange={setTab}
+    >
+      {tab === 'approvals' && <DoctorApprovalPanel />}
+      {tab === 'content' && <CmsEditor />}
+      {tab === 'ai' && <GroqSettingsPanel />}
+      {tab === 'inquiries' && <ContactInquiriesPanel />}
+    </DashboardShell>
   );
 }

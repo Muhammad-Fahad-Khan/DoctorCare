@@ -7,38 +7,94 @@ html {
 }
 
 body {
-  @apply font-sans text-royal antialiased;
+  @apply bg-surface font-sans text-royal antialiased;
+}
+
+::selection {
+  @apply bg-orchid text-royal;
 }
 
 @layer components {
-  /* Light-surface glass card used on public pages */
+  /* Standard content card — soft border + layered shadow, used everywhere */
   .glass-card {
-    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl;
+    @apply rounded-2xl border border-royal/[0.06] bg-white/90 shadow-soft backdrop-blur-md;
   }
 
-  /* Dark-surface glass card used for headers / dark panels */
+  /* Dark-surface card for headers / dark panels */
   .glass-card-dark {
-    @apply bg-royal/90 backdrop-blur-md border border-wisteria/20 rounded-2xl text-white;
+    @apply rounded-2xl border border-wisteria/20 bg-dark-gradient text-white shadow-lift;
+  }
+
+  /* Card that reacts to hover — lifts instead of scaling so text never blurs */
+  .interactive-card {
+    @apply glass-card transition-all duration-300 ease-docucare
+      hover:-translate-y-0.5 hover:border-magenta/25 hover:shadow-lift;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-magenta px-6 py-3
-      text-sm font-semibold text-white
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-gradient px-6 py-3
+      text-sm font-semibold text-white shadow-md shadow-magenta/25
       transition-all duration-300 ease-docucare
-      hover:shadow-glow-magenta hover:-translate-y-0.5 active:translate-y-0
-      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-magenta focus-visible:ring-offset-2;
+      hover:-translate-y-0.5 hover:shadow-glow-magenta active:translate-y-0
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-magenta focus-visible:ring-offset-2
+      disabled:pointer-events-none;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-wisteria/40 bg-white/60 px-6 py-3
-      text-sm font-semibold text-royal
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-royal/10 bg-white px-6 py-3
+      text-sm font-semibold text-royal shadow-sm
       transition-all duration-300 ease-docucare
-      hover:border-magenta/40 hover:bg-orchid/20
+      hover:-translate-y-0.5 hover:border-magenta/40 hover:bg-orchid/20
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-magenta focus-visible:ring-offset-2;
   }
 
-  .interactive-card {
-    @apply glass-card shadow-sm transition-all duration-300 ease-docucare
-      hover:scale-[1.01] hover:border-magenta/40 hover:shadow-xl hover:shadow-glow-royal;
+  /* Light button for use on dark / gradient backgrounds */
+  .btn-light {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3
+      text-sm font-semibold text-royal shadow-md
+      transition-all duration-300 ease-docucare
+      hover:-translate-y-0.5 hover:shadow-lift
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-royal;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-royal/10 bg-white px-3.5 py-2.5 text-sm text-royal outline-none
+      transition-all duration-300 ease-docucare placeholder:text-royal/35
+      focus:border-magenta/50 focus:ring-4 focus:ring-magenta/10;
+  }
+
+  /* Small uppercase label above section headings */
+  .eyebrow {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-magenta/15 bg-magenta/[0.06] px-3 py-1
+      text-xs font-semibold uppercase tracking-wider text-magenta;
+  }
+
+  .section-title {
+    @apply text-balance text-3xl font-extrabold tracking-tight text-royal sm:text-4xl;
+  }
+
+  .section-lead {
+    @apply mx-auto mt-4 max-w-2xl text-balance text-base text-royal/65 sm:text-lg;
+  }
+
+  .text-gradient {
+    @apply bg-brand-gradient bg-clip-text text-transparent;
+  }
+
+  /* Subtle dotted texture for hero / banner backgrounds */
+  .bg-dots {
+    background-image: radial-gradient(rgba(78, 23, 93, 0.09) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

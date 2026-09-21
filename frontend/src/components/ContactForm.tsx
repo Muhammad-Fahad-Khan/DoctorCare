@@ -26,48 +26,65 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <div className="glass-card flex flex-col items-center gap-2 p-8 text-center">
-        <CheckCircle2 className="text-magenta" size={26} />
-        <p className="text-sm font-semibold text-royal">Message sent</p>
-        <p className="text-sm text-royal/60">We'll get back to you shortly.</p>
+      <div className="glass-card flex h-full min-h-[320px] flex-col items-center justify-center gap-3 p-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-mint/15 text-mint">
+          <CheckCircle2 size={28} />
+        </span>
+        <p className="text-lg font-bold text-royal">Message sent</p>
+        <p className="text-sm text-royal/60">Thanks for reaching out — we'll get back to you shortly.</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={onSubmit} className="glass-card space-y-4 p-6">
-      <label className="block text-sm font-medium text-royal/80">
-        Name
-        <input
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="mt-1.5 w-full rounded-xl border border-royal/10 bg-white/70 px-3.5 py-2.5 text-sm outline-none transition-all duration-300 ease-docucare focus:border-magenta/50 focus:ring-2 focus:ring-magenta/20"
-        />
-      </label>
-      <label className="block text-sm font-medium text-royal/80">
-        Email
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mt-1.5 w-full rounded-xl border border-royal/10 bg-white/70 px-3.5 py-2.5 text-sm outline-none transition-all duration-300 ease-docucare focus:border-magenta/50 focus:ring-2 focus:ring-magenta/20"
-        />
-      </label>
+    <form onSubmit={onSubmit} className="glass-card space-y-5 p-6 sm:p-8">
+      <div>
+        <h2 className="text-lg font-bold text-royal">Send us a message</h2>
+        <p className="mt-1 text-sm text-royal/55">We usually reply within one business day.</p>
+      </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <label className="block text-sm font-medium text-royal/80">
+          Name
+          <input required value={name} onChange={(e) => setName(e.target.value)} className="input-field mt-1.5" />
+        </label>
+        <label className="block text-sm font-medium text-royal/80">
+          Email
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input-field mt-1.5"
+          />
+        </label>
+      </div>
+
       <label className="block text-sm font-medium text-royal/80">
         Message
         <textarea
           required
-          rows={4}
+          rows={5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="mt-1.5 w-full rounded-xl border border-royal/10 bg-white/70 px-3.5 py-2.5 text-sm outline-none transition-all duration-300 ease-docucare focus:border-magenta/50 focus:ring-2 focus:ring-magenta/20"
+          className="input-field mt-1.5 resize-none"
         />
       </label>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
-        {submitting ? 'Sending…' : (<><Send size={14} className="mr-1.5 inline" /> Send message</>)}
+
+      {error && (
+        <p role="alert" className="rounded-xl bg-red-50 px-3.5 py-2.5 text-sm text-red-600">
+          {error}
+        </p>
+      )}
+
+      <button type="submit" disabled={submitting} className="btn-primary w-full !py-3.5 disabled:opacity-60">
+        {submitting ? (
+          'Sending…'
+        ) : (
+          <>
+            <Send size={15} /> Send message
+          </>
+        )}
       </button>
     </form>
   );
