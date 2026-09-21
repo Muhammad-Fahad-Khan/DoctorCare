@@ -1,0 +1,5 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# node_modules is committed as-is: never rewrite line endings inside packages
+**/node_modules/** -text

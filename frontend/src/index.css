@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-sans text-royal antialiased;
+}
+
+@layer components {
+  /* Light-surface glass card used on public pages */
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 rounded-2xl;
+  }
+
+  /* Dark-surface glass card used for headers / dark panels */
+  .glass-card-dark {
+    @apply bg-royal/90 backdrop-blur-md border border-wisteria/20 rounded-2xl text-white;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-magenta px-6 py-3
+      text-sm font-semibold text-white
+      transition-all duration-300 ease-docucare
+      hover:shadow-glow-magenta hover:-translate-y-0.5 active:translate-y-0
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-magenta focus-visible:ring-offset-2;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full border border-wisteria/40 bg-white/60 px-6 py-3
+      text-sm font-semibold text-royal
+      transition-all duration-300 ease-docucare
+      hover:border-magenta/40 hover:bg-orchid/20
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-magenta focus-visible:ring-offset-2;
+  }
+
+  .interactive-card {
+    @apply glass-card shadow-sm transition-all duration-300 ease-docucare
+      hover:scale-[1.01] hover:border-magenta/40 hover:shadow-xl hover:shadow-glow-royal;
+  }
+}
