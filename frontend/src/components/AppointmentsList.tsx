@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, MessageSquareText, Video, X } from 'lucide-react';
 import { api, AppointmentResponse } from '../lib/api';
 import { doctorName, formatTime, formatWhen, isInJoinWindow, joinWindow } from '../lib/format';
+import { matches } from '../lib/search';
+import { Highlight, NoResults, SearchBar } from './SearchBar';
 
 const STATUS_STYLES: Record<AppointmentResponse['status'], string> = {
   PENDING: 'bg-orchid text-royal',
@@ -18,6 +20,7 @@ export function AppointmentsList() {
   const [appointments, setAppointments] = useState<AppointmentResponse[] | null>(null);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>('All');
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   function refresh() {
     api
@@ -41,13 +44,24 @@ export function AppointmentsList() {
     }
   }
 
-  const visible = appointments?.filter((a) =>
-    filter === 'All' ? true : a.status === filter.toUpperCase(),
+  const visible = appointments?.filter(
+    (a) =>
+      (filter === 'All' ? true : a.status === filter.toUpperCase()) &&
+      matches(
+        query,
+        a.doctor.fullName,
+        a.triageSession?.recommendedSpecialty,
+        a.triageSession?.summary,
+        a.patientGuidance,
+        formatWhen(a.scheduledAt),
+      ),
   );
 
   return (
     <div>
-      <div className="flex gap-2">
+      <SearchBar value={query} onChange={setQuery} placeholder="Search doctor, specialty or date…" />
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <button
             key={f}
@@ -63,14 +77,21 @@ export function AppointmentsList() {
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {appointments === null && <p className="mt-4 text-sm text-royal/50">Loading…</p>}
-      {visible?.length === 0 && <p className="mt-4 text-sm text-royal/50">Nothing here yet.</p>}
+      {visible?.length === 0 &&
+        (query.trim() ? (
+          <NoResults query={query} onClear={() => setQuery('')} />
+        ) : (
+          <p className="mt-4 text-sm text-royal/50">Nothing here yet.</p>
+        ))}
 
       <div className="mt-4 space-y-3">
         {visible?.map((appt) => (
           <div key={appt.id} className="interactive-card p-4">
             <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-royal">{doctorName(appt.doctor.fullName)}</p>
+              <p className="text-sm font-semibold text-royal">
+                <Highlight text={doctorName(appt.doctor.fullName)} query={query} />
+              </p>
               <p className="text-xs text-royal/50">
                 {new Date(appt.scheduledAt).toLocaleString(undefined, {
                   weekday: 'short',

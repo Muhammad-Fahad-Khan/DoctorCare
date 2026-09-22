@@ -1,6 +1,8 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, ChevronDown, LucideIcon, Plus, Trash2 } from 'lucide-react';
 import { PreviewPanel, Row, SaveBar, SectionCard, toRows, newRowId, useSectionEditor } from './shared';
+import { matches, stringValues } from '../../lib/search';
+import { Highlight, NoResults, SearchBar } from '../SearchBar';
 
 function ItemCard({
   index,
@@ -161,6 +163,7 @@ export function ItemListEditor<T>({
   const [openIds, setOpenIds] = useState<Set<string>>(new Set());
   const [justAdded, setJustAdded] = useState<string | null>(null);
   const [attempted, setAttempted] = useState(false);
+  const [query, setQuery] = useState('');
 
   const { draft, setDraft, dirty, saving, justSaved, error, save, discard } = useSectionEditor<Row<T>[]>({
     pageSlug,
@@ -184,6 +187,7 @@ export function ItemListEditor<T>({
 
   function add() {
     const row: Row<T> = { _id: newRowId(), data: newItem() };
+    setQuery(''); // otherwise the brand-new blank item would be filtered out of sight
     setDraft([...draft, row]);
     setOpenIds((prev) => new Set(prev).add(row._id));
     setJustAdded(row._id);
@@ -213,6 +217,8 @@ export function ItemListEditor<T>({
   }
 
   const count = draft.length;
+  const canSearch = count >= 4;
+  const shown = draft.filter((r) => !canSearch || matches(query, ...stringValues(r.data)));
 
   return (
     <SectionCard
@@ -235,18 +241,31 @@ export function ItemListEditor<T>({
         </div>
       ) : (
         <div className="space-y-2.5">
-          <p className="px-1 text-xs font-medium text-royal/40">
-            {count} {count === 1 ? noun : nounPlural} · click one to edit, use the arrows to change the order
+          {canSearch && <SearchBar value={query} onChange={setQuery} placeholder={`Search ${nounPlural}…`} />}
+
+          <p className="px-1 text-xs font-medium text-royal/50">
+            {query.trim() && canSearch
+              ? `Showing ${shown.length} of ${count} ${nounPlural}`
+              : `${count} ${count === 1 ? noun : nounPlural} · click one to edit, use the arrows to change the order`}
           </p>
 
-          {draft.map((row, i) => (
+          {canSearch && shown.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
+
+          {draft.map((row, i) =>
+            shown.includes(row) ? (
             <ItemCard
               key={row._id}
               index={i}
               total={count}
               open={openIds.has(row._id)}
               onToggle={() => toggle(row._id)}
-              title={itemTitle(row.data).trim() || <span className="font-normal italic text-royal/40">New {noun} — click to fill in</span>}
+              title={
+                itemTitle(row.data).trim() ? (
+                  <Highlight text={itemTitle(row.data)} query={canSearch ? query : ''} />
+                ) : (
+                  <span className="font-normal italic text-royal/40">New {noun} — click to fill in</span>
+                )
+              }
               meta={itemMeta?.(row.data)}
               problem={attempted ? itemProblem(row.data) : null}
               autoFocus={justAdded === row._id}
@@ -255,7 +274,8 @@ export function ItemListEditor<T>({
             >
               {renderFields(row.data, (patch) => update(row._id, patch))}
             </ItemCard>
-          ))}
+            ) : null,
+          )}
 
           <button
             type="button"

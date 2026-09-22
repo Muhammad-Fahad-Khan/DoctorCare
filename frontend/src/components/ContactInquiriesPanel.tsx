@@ -1,26 +1,12 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { Check, CheckCircle2, Inbox, Mail, Reply, Search, SearchX, X } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Check, CheckCircle2, Inbox, Mail, Reply, SearchX } from 'lucide-react';
 import { api, ContactInquiry } from '../lib/api';
 import { formatWhen } from '../lib/format';
+import { matches } from '../lib/search';
+import { Highlight, SearchBar } from './SearchBar';
 
 const FILTERS = ['All', 'New', 'Handled'] as const;
 type Filter = (typeof FILTERS)[number];
-
-/** Wraps every match of `query` in <mark> so admins can see why a row matched. */
-function highlight(text: string, query: string): ReactNode {
-  const q = query.trim();
-  if (!q) return text;
-  const parts = text.split(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'));
-  return parts.map((part, i) =>
-    part.toLowerCase() === q.toLowerCase() ? (
-      <mark key={i} className="rounded bg-orchid/60 px-0.5 text-royal">
-        {part}
-      </mark>
-    ) : (
-      part
-    ),
-  );
-}
 
 export function ContactInquiriesPanel() {
   const [inquiries, setInquiries] = useState<ContactInquiry[] | null>(null);
@@ -45,10 +31,8 @@ export function ContactInquiriesPanel() {
 
   // Search first, then count each status inside the search results so the pill numbers always match the list.
   const matching = useMemo(() => {
-    const q = query.trim().toLowerCase();
     const sorted = [...(inquiries ?? [])].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
-    if (!q) return sorted;
-    return sorted.filter((i) => [i.name, i.email, i.message].some((field) => field.toLowerCase().includes(q)));
+    return sorted.filter((i) => matches(query, i.name, i.email, i.message));
   }, [inquiries, query]);
 
   const counts = {
@@ -80,28 +64,7 @@ export function ContactInquiriesPanel() {
         </div>
       ) : (
         <>
-          {/* Search */}
-          <div className="relative">
-            <Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-royal/40" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, email or message…"
-              aria-label="Search inquiries"
-              className="input-field !rounded-full !py-3 !pl-11 !pr-11 [&::-webkit-search-cancel-button]:hidden"
-            />
-            {query && (
-              <button
-                type="button"
-                onClick={() => setQuery('')}
-                aria-label="Clear search"
-                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-royal/50 transition-colors hover:bg-royal/5 hover:text-royal"
-              >
-                <X size={15} />
-              </button>
-            )}
-          </div>
+          <SearchBar value={query} onChange={setQuery} placeholder="Search by name, email or message…" />
 
           {/* Status filter */}
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -161,13 +124,13 @@ export function ContactInquiriesPanel() {
                     <div className="min-w-0">
                       <p className="flex items-center gap-2 text-base font-bold text-royal">
                         <Mail size={15} className="shrink-0 text-magenta" />
-                        <span className="truncate">{highlight(inq.name, query)}</span>
+                        <span className="truncate"><Highlight text={inq.name} query={query} /></span>
                       </p>
                       <a
                         href={`mailto:${inq.email}`}
                         className="mt-0.5 block truncate text-sm text-royal/70 hover:text-magenta hover:underline"
                       >
-                        {highlight(inq.email, query)}
+                        <Highlight text={inq.email} query={query} />
                       </a>
                     </div>
 
@@ -188,7 +151,7 @@ export function ContactInquiriesPanel() {
                   </div>
 
                   <p className="mt-3 whitespace-pre-line break-words text-sm leading-relaxed text-royal/85">
-                    {highlight(inq.message, query)}
+                    <Highlight text={inq.message} query={query} />
                   </p>
 
                   <div className="mt-4 flex flex-wrap items-center gap-2">

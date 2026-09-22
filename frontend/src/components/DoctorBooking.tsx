@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Calendar, CheckCircle2 } from 'lucide-react';
 import { api, DoctorListing, AvailabilitySlot, AppointmentResponse } from '../lib/api';
+import { matches } from '../lib/search';
+import { Highlight, NoResults, SearchBar } from './SearchBar';
 
 function formatSlot(iso: string) {
   return new Date(iso).toLocaleString(undefined, {
@@ -27,6 +29,7 @@ export function DoctorBooking({
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     setDoctors(null);
@@ -102,6 +105,10 @@ export function DoctorBooking({
   }
 
   // ---- Step 1: pick a doctor ----
+  // A search box only earns its place once the list is long enough to need one.
+  const canSearch = (doctors?.length ?? 0) >= 4;
+  const shownDoctors = doctors?.filter((d) => matches(canSearch ? query : '', d.user.fullName, d.specialty, d.bio));
+
   return (
     <div className="interactive-card p-5">
       <p className="text-sm font-semibold text-royal">
@@ -118,8 +125,13 @@ export function DoctorBooking({
         </p>
       )}
 
+      {canSearch && (
+        <SearchBar className="mt-3" value={query} onChange={setQuery} placeholder="Search doctors by name or specialty…" />
+      )}
+      {canSearch && shownDoctors?.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
+
       <div className="mt-3 space-y-2">
-        {doctors?.map((doc) => (
+        {shownDoctors?.map((doc) => (
           <button
             key={doc.id}
             onClick={() => setSelectedDoctor(doc)}
@@ -127,7 +139,9 @@ export function DoctorBooking({
             className="flex w-full items-center justify-between rounded-xl border border-royal/10 bg-white/70 px-4 py-3 text-left text-sm transition-all duration-300 ease-docucare hover:border-magenta/40 hover:bg-orchid/10 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:border-royal/10 disabled:hover:bg-white/70"
           >
             <span>
-              <span className="block font-medium text-royal">{doc.user.fullName}</span>
+              <span className="block font-medium text-royal">
+                <Highlight text={doc.user.fullName} query={query} />
+              </span>
               <span className="text-xs text-royal/50">
                 {doc.specialty}
                 {doc.yearsExperience ? ` · ${doc.yearsExperience} yrs experience` : ''}

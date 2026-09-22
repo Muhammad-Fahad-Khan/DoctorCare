@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle2, XCircle, Ban } from 'lucide-react';
 import { api, DoctorProfileAdmin } from '../lib/api';
+import { matches } from '../lib/search';
+import { Highlight, NoResults, SearchBar } from './SearchBar';
 
 const TABS = ['PENDING', 'APPROVED', 'REJECTED', 'SUSPENDED'] as const;
 
@@ -16,6 +18,7 @@ export function DoctorApprovalPanel() {
   const [doctors, setDoctors] = useState<DoctorProfileAdmin[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   function refresh() {
     api
@@ -43,9 +46,15 @@ export function DoctorApprovalPanel() {
     }
   }
 
+  const visible = doctors?.filter((d) =>
+    matches(query, d.user.fullName, d.user.email, d.specialty, d.licenseNumber),
+  );
+
   return (
     <div>
-      <div className="flex gap-2">
+      <SearchBar value={query} onChange={setQuery} placeholder="Search by name, email, specialty or license…" />
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button
             key={t}
@@ -62,14 +71,21 @@ export function DoctorApprovalPanel() {
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {doctors === null && <p className="mt-4 text-sm text-royal/50">Loading…</p>}
       {doctors?.length === 0 && <p className="mt-4 text-sm text-royal/50">No doctors in this state.</p>}
+      {doctors && doctors.length > 0 && visible?.length === 0 && (
+        <NoResults query={query} onClear={() => setQuery('')} />
+      )}
 
       <div className="mt-4 space-y-3">
-        {doctors?.map((doc) => (
+        {visible?.map((doc) => (
           <div key={doc.id} className="interactive-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-royal">{doc.user.fullName}</p>
-                <p className="text-xs text-royal/50">{doc.user.email}</p>
+                <p className="text-sm font-semibold text-royal">
+                  <Highlight text={doc.user.fullName} query={query} />
+                </p>
+                <p className="text-xs text-royal/60">
+                  <Highlight text={doc.user.email} query={query} />
+                </p>
               </div>
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLES[doc.status]}`}>
                 {doc.status}
@@ -77,7 +93,10 @@ export function DoctorApprovalPanel() {
             </div>
 
             <div className="mt-2 text-xs text-royal/60">
-              <span className="font-medium text-royal/80">{doc.specialty}</span> · License #{doc.licenseNumber}
+              <span className="font-medium text-royal/80">
+                <Highlight text={doc.specialty} query={query} />
+              </span>{' '}
+              · License #<Highlight text={doc.licenseNumber} query={query} />
             </div>
 
             <div className="mt-3 flex gap-2">

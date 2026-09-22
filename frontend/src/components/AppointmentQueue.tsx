@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import { Video } from 'lucide-react';
 import { api, AppointmentResponse } from '../lib/api';
 import { PatientBriefModal } from './PatientBriefModal';
-import { isInJoinWindow } from '../lib/format';
+import { formatWhen, isInJoinWindow } from '../lib/format';
+import { matches } from '../lib/search';
+import { Highlight, NoResults, SearchBar } from './SearchBar';
 
 const STATUS_STYLES: Record<AppointmentResponse['status'], string> = {
   PENDING: 'bg-orchid text-royal',
@@ -20,6 +22,7 @@ export function AppointmentQueue() {
   const [tab, setTab] = useState<(typeof TABS)[number]>('Pending');
   const [openId, setOpenId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   function refresh() {
     api
@@ -33,11 +36,24 @@ export function AppointmentQueue() {
   // Looked up by id so the open panel always reflects the freshest data after a save.
   const open = appointments?.find((a) => a.id === openId) ?? null;
 
-  const visible = appointments?.filter((a) => (tab === 'All' ? true : a.status === tab.toUpperCase()));
+  const visible = appointments?.filter(
+    (a) =>
+      (tab === 'All' ? true : a.status === tab.toUpperCase()) &&
+      matches(
+        query,
+        a.patient.fullName,
+        a.triageSession?.recommendedSpecialty,
+        a.triageSession?.summary,
+        a.triageSession?.detectedSymptoms?.join(' '),
+        formatWhen(a.scheduledAt),
+      ),
+  );
 
   return (
     <div>
-      <div className="flex gap-2">
+      <SearchBar value={query} onChange={setQuery} placeholder="Search patient, specialty or symptoms…" />
+
+      <div className="mt-3 flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button
             key={t}
@@ -53,7 +69,12 @@ export function AppointmentQueue() {
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       {appointments === null && <p className="mt-4 text-sm text-royal/50">Loading…</p>}
-      {visible?.length === 0 && <p className="mt-4 text-sm text-royal/50">Nothing here.</p>}
+      {visible?.length === 0 &&
+        (query.trim() ? (
+          <NoResults query={query} onClear={() => setQuery('')} />
+        ) : (
+          <p className="mt-4 text-sm text-royal/50">Nothing here.</p>
+        ))}
 
       <div className="mt-4 space-y-3">
         {visible?.map((appt) => (
@@ -66,7 +87,9 @@ export function AppointmentQueue() {
             className="interactive-card flex w-full cursor-pointer items-center justify-between p-4 text-left"
           >
             <div>
-              <p className="text-sm font-semibold text-royal">{appt.patient.fullName}</p>
+              <p className="text-sm font-semibold text-royal">
+                <Highlight text={appt.patient.fullName} query={query} />
+              </p>
               <p className="text-xs text-royal/50">
                 {new Date(appt.scheduledAt).toLocaleString(undefined, {
                   weekday: 'short',
