@@ -2,10 +2,11 @@ import { Star, BadgeCheck, Quote } from 'lucide-react';
 import { TestimonialsContent } from '../types/cms';
 
 export function Testimonials({ content }: { content: TestimonialsContent }) {
-  if (content.items.length === 0) return null;
+  const items = content.items.filter((t) => t.active !== false);
+  if (items.length === 0) return null;
 
   return (
-    <section className="bg-brand-soft/60 px-6 py-20">
+    <section id="reviews" className="scroll-mt-24 bg-brand-soft/60 px-6 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="text-center">
           <span className="eyebrow">Testimonials</span>
@@ -13,7 +14,7 @@ export function Testimonials({ content }: { content: TestimonialsContent }) {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {content.items.map((t) => (
+          {items.map((t) => (
             <figure key={t.name} className="interactive-card relative flex flex-col p-7">
               <Quote size={36} className="absolute right-6 top-6 text-orchid" fill="currentColor" strokeWidth={0} />
               <div className="flex items-center gap-1 text-magenta">

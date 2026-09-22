@@ -165,11 +165,13 @@ export function ImagesEditor({
   pageSlug,
   initial,
   slots,
+  title = 'Background images',
   description,
 }: {
   pageSlug: string;
   initial: ImagesContent | undefined;
   slots: ImageSlot[];
+  title?: string;
   description: string;
 }) {
   const [start] = useState<ImagesContent>(() =>
@@ -185,7 +187,7 @@ export function ImagesEditor({
   });
 
   return (
-    <SectionCard icon={ImageIcon} title="Background images" description={description}>
+    <SectionCard icon={ImageIcon} title={title} description={description}>
       <div className="space-y-4">
         {slots.map((slot) => (
           <ImageField

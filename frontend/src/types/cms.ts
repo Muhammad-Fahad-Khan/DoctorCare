@@ -26,6 +26,7 @@ export interface FeatureItem {
   icon: string; // lucide-react icon name
   title: string;
   description: string;
+  active?: boolean; // false = saved but hidden from the public site; missing/true = shown
 }
 export interface FeaturesContent {
   items: FeatureItem[];
@@ -36,6 +37,7 @@ export interface TestimonialItem {
   quote: string;
   rating: number;
   verified: boolean;
+  active?: boolean; // false = saved but hidden from the public site; missing/true = shown
 }
 export interface TestimonialsContent {
   items: TestimonialItem[];
@@ -44,6 +46,7 @@ export interface TestimonialsContent {
 export interface FaqItem {
   question: string;
   answer: string;
+  active?: boolean; // false = saved but hidden from the public site; missing/true = shown
 }
 export interface FaqContent {
   items: FaqItem[];
@@ -58,6 +61,7 @@ export interface StoryContent {
 export interface StatItem {
   label: string;
   value: string;
+  active?: boolean; // false = saved but hidden from the public site; missing/true = shown
 }
 export interface StatsContent {
   items: StatItem[];

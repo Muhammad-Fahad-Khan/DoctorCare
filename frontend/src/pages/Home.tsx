@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 import {
   CmsPageResponse,
@@ -50,6 +51,7 @@ function renderSection(section: CmsPageResponse['sections'][number], images?: Im
 export function Home() {
   const [page, setPage] = useState<CmsPageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { hash } = useLocation();
 
   useEffect(() => {
     api
@@ -57,6 +59,14 @@ export function Home() {
       .then(setPage)
       .catch(() => setError('Could not load page content.'));
   }, []);
+
+  // The navbar's FAQ / Reviews links point at "/#faq" and "/#reviews" — once the CMS content
+  // (and the section they point to) has rendered, jump to it. Runs again if the hash changes
+  // while already on this page, e.g. clicking Reviews then FAQ without leaving Home.
+  useEffect(() => {
+    if (!page || !hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [page, hash]);
 
   if (error) {
     return (

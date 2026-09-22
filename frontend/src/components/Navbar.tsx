@@ -9,6 +9,13 @@ const links = [
   { to: '/contact', label: 'Contact' },
 ];
 
+// These live inside the home page rather than being their own routes, so they're plain
+// links to "/#<id>" instead of NavLinks — Home.tsx scrolls to the matching id once it loads.
+const sectionLinks = [
+  { hash: 'faq', label: 'FAQ' },
+  { hash: 'reviews', label: 'Reviews' },
+];
+
 const DASHBOARD_PATH = { PATIENT: '/patient', DOCTOR: '/doctor', ADMIN: '/admin' } as const;
 
 export function Logo({ light = false }: { light?: boolean }) {
@@ -90,6 +97,15 @@ export function Navbar() {
               >
                 {link.label}
               </NavLink>
+            ))}
+            {sectionLinks.map((link) => (
+              <Link
+                key={link.hash}
+                to={`/#${link.hash}`}
+                className="rounded-full px-4 py-2 text-sm font-medium text-royal/70 transition-all duration-300 ease-docucare hover:bg-royal/5 hover:text-royal"
+              >
+                {link.label}
+              </Link>
             ))}
           </div>
 
@@ -181,6 +197,16 @@ export function Navbar() {
               >
                 {link.label}
               </NavLink>
+            ))}
+            {sectionLinks.map((link) => (
+              <Link
+                key={link.hash}
+                to={`/#${link.hash}`}
+                onClick={() => setMobileOpen(false)}
+                className="block rounded-xl px-4 py-3 text-sm font-semibold text-royal/80 hover:bg-royal/5"
+              >
+                {link.label}
+              </Link>
             ))}
 
             <div className="grid gap-2 pt-2">

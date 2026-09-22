@@ -349,7 +349,7 @@ export function FaqEditor({ initial, order }: { initial: FaqContent; order: numb
       items={initial.items}
       noun="FAQ"
       nounPlural="FAQs"
-      newItem={() => ({ question: '', answer: '' })}
+      newItem={() => ({ question: '', answer: '', active: true })}
       itemTitle={(i) => i.question}
       itemProblem={(i) => (!i.question.trim() ? 'the question is empty' : !i.answer.trim() ? 'the answer is empty' : null)}
       renderFields={(item, update) => (
@@ -390,7 +390,7 @@ export function TestimonialsEditor({ initial, order }: { initial: TestimonialsCo
       items={initial.items}
       noun="testimonial"
       nounPlural="testimonials"
-      newItem={() => ({ name: '', quote: '', rating: 5, verified: false })}
+      newItem={() => ({ name: '', quote: '', rating: 5, verified: false, active: true })}
       itemTitle={(i) => i.name}
       itemMeta={(i) => (
         <span className="hidden items-center gap-0.5 text-magenta sm:flex" aria-label={`${i.rating} stars`}>
@@ -439,7 +439,7 @@ export function FeaturesEditor({ initial, order }: { initial: FeaturesContent; o
       items={initial.items}
       noun="feature"
       nounPlural="features"
-      newItem={() => ({ icon: 'Star', title: '', description: '' })}
+      newItem={() => ({ icon: 'Star', title: '', description: '', active: true })}
       itemTitle={(i) => i.title}
       itemMeta={(i) => {
         const Icon = iconFor(i.icon);
@@ -483,7 +483,7 @@ export function StatsEditor({ initial, order }: { initial: StatsContent; order: 
       items={initial.items}
       noun="stat"
       nounPlural="stats"
-      newItem={() => ({ value: '', label: '' })}
+      newItem={() => ({ value: '', label: '', active: true })}
       itemTitle={(i) => [i.value, i.label].filter(Boolean).join(' — ')}
       itemProblem={(i) => (!i.value.trim() ? 'the number is empty' : !i.label.trim() ? 'the label is empty' : null)}
       renderFields={(item, update) => (

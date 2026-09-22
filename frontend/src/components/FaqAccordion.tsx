@@ -5,27 +5,24 @@ import { matches } from '../lib/search';
 import { Highlight, NoResults, SearchBar } from './SearchBar';
 
 export function FaqAccordion({ content }: { content: FaqContent }) {
-  const [openQuestion, setOpenQuestion] = useState<string | null>(content.items[0]?.question ?? null);
+  const items = content.items.filter((i) => i.active !== false);
+  const [openQuestion, setOpenQuestion] = useState<string | null>(items[0]?.question ?? null);
   const [query, setQuery] = useState('');
 
-  if (content.items.length === 0) return null;
+  if (items.length === 0) return null;
 
-  // Search only appears once there are enough questions for it to be useful.
-  const canSearch = content.items.length >= 4;
-  const searching = canSearch && query.trim() !== '';
-  const shown = content.items.filter((i) => !searching || matches(query, i.question, i.answer));
+  const searching = query.trim() !== '';
+  const shown = items.filter((i) => !searching || matches(query, i.question, i.answer));
 
   return (
-    <section className="px-6 py-20">
+    <section id="faq" className="scroll-mt-24 px-6 py-20">
       <div className="mx-auto max-w-3xl">
         <div className="text-center">
           <span className="eyebrow">FAQ</span>
           <h2 className="section-title mt-4">Questions people ask before their first visit</h2>
         </div>
 
-        {canSearch && (
-          <SearchBar className="mx-auto mt-8 max-w-xl" value={query} onChange={setQuery} placeholder="Search the questions…" />
-        )}
+        <SearchBar className="mx-auto mt-8 max-w-xl" value={query} onChange={setQuery} placeholder="Search the questions…" />
         {searching && shown.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
 
         <div className="mt-6 space-y-3">

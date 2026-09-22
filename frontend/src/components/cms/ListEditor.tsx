@@ -1,8 +1,11 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, ChevronDown, LucideIcon, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronDown, Eye, EyeOff, LucideIcon, Plus, Trash2 } from 'lucide-react';
 import { PreviewPanel, Row, SaveBar, SectionCard, toRows, newRowId, useSectionEditor } from './shared';
 import { matches, stringValues } from '../../lib/search';
 import { Highlight, NoResults, SearchBar } from '../SearchBar';
+
+/** true unless explicitly turned off — so items saved before this feature existed still show. */
+const isActive = (item: { active?: boolean }) => item.active !== false;
 
 function ItemCard({
   index,
@@ -13,6 +16,9 @@ function ItemCard({
   meta,
   problem,
   autoFocus,
+  active,
+  noun,
+  onToggleActive,
   onMove,
   onRemove,
   children,
@@ -25,6 +31,9 @@ function ItemCard({
   meta?: ReactNode;
   problem: string | null;
   autoFocus: boolean;
+  active: boolean;
+  noun: string;
+  onToggleActive: () => void;
   onMove: (dir: -1 | 1) => void;
   onRemove: () => void;
   children: ReactNode;
@@ -57,7 +66,14 @@ function ItemCard({
             {index + 1}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold text-royal">{title}</span>
+            <span className="flex items-center gap-2">
+              <span className="truncate text-sm font-semibold text-royal">{title}</span>
+              {!active && (
+                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-royal/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-royal/50">
+                  <EyeOff size={10} /> Inactive
+                </span>
+              )}
+            </span>
             {problem && <span className="block text-xs text-red-600">Needs attention: {problem}</span>}
           </span>
           {meta}
@@ -89,6 +105,18 @@ function ItemCard({
           <div className="flex items-center">
             <button
               type="button"
+              onClick={onToggleActive}
+              aria-pressed={active}
+              title={active ? `Active — shown on the website. Click to hide this ${noun}.` : `Inactive — hidden from the website. Click to show this ${noun}.`}
+              className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                active ? 'text-mint hover:bg-mint/10' : 'text-royal/35 hover:bg-royal/5 hover:text-royal/60'
+              }`}
+            >
+              {active ? <Eye size={15} /> : <EyeOff size={15} />}
+            </button>
+            <span className="mx-0.5 h-5 w-px bg-royal/10" aria-hidden />
+            <button
+              type="button"
               onClick={() => onMove(-1)}
               disabled={index === 0}
               aria-label="Move up"
@@ -117,7 +145,25 @@ function ItemCard({
         )}
       </div>
 
-      {open && <div className="space-y-4 border-t border-royal/5 p-4 sm:p-5">{children}</div>}
+      {open && (
+        <div className="space-y-4 border-t border-royal/5 p-4 sm:p-5">
+          <label className="flex cursor-pointer items-center justify-between gap-4 rounded-xl border border-royal/10 bg-surface/60 px-4 py-3">
+            <span>
+              <span className="block text-sm font-semibold text-royal">Active</span>
+              <span className="block text-xs text-royal/50">
+                {active ? 'Shown to visitors on the website.' : 'Hidden from visitors, but kept here for later.'}
+              </span>
+            </span>
+            <input type="checkbox" checked={active} onChange={onToggleActive} className="peer sr-only" />
+            <span
+              aria-hidden
+              className="relative h-6 w-11 shrink-0 rounded-full bg-royal/15 transition-colors duration-300 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform after:duration-300 peer-checked:bg-mint peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-magenta peer-focus-visible:ring-offset-2"
+            />
+          </label>
+
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -125,8 +171,9 @@ function ItemCard({
 /**
  * One editor for every "list of things" section (FAQs, testimonials, features, stats).
  * Add / edit / reorder / delete all happen in a local draft; nothing goes live until Save.
+ * Every item also carries an Active/Inactive switch, so an item can be kept without publishing it.
  */
-export function ItemListEditor<T>({
+export function ItemListEditor<T extends { active?: boolean }>({
   pageSlug,
   sectionKey,
   order,
@@ -217,8 +264,8 @@ export function ItemListEditor<T>({
   }
 
   const count = draft.length;
-  const canSearch = count >= 4;
-  const shown = draft.filter((r) => !canSearch || matches(query, ...stringValues(r.data)));
+  const shown = draft.filter((r) => matches(query, ...stringValues(r.data)));
+  const searching = query.trim() !== '';
 
   return (
     <SectionCard
@@ -231,8 +278,11 @@ export function ItemListEditor<T>({
         </button>
       }
     >
+      {/* Always visible, even with nothing (or nothing yet) to search. */}
+      <SearchBar value={query} onChange={setQuery} placeholder={`Search ${nounPlural}…`} />
+
       {count === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-royal/10 px-6 py-12 text-center">
+        <div className="mt-4 rounded-2xl border-2 border-dashed border-royal/10 px-6 py-12 text-center">
           <p className="text-sm font-semibold text-royal">No {nounPlural} yet</p>
           <p className="mt-1 text-sm text-royal/50">Add your first one — it only takes a few seconds.</p>
           <button type="button" onClick={add} className="btn-primary mt-5 !px-5 !py-2.5 text-xs">
@@ -240,40 +290,41 @@ export function ItemListEditor<T>({
           </button>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {canSearch && <SearchBar value={query} onChange={setQuery} placeholder={`Search ${nounPlural}…`} />}
-
+        <div className="mt-4 space-y-2.5">
           <p className="px-1 text-xs font-medium text-royal/50">
-            {query.trim() && canSearch
+            {searching
               ? `Showing ${shown.length} of ${count} ${nounPlural}`
               : `${count} ${count === 1 ? noun : nounPlural} · click one to edit, use the arrows to change the order`}
           </p>
 
-          {canSearch && shown.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
+          {shown.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
 
           {draft.map((row, i) =>
             shown.includes(row) ? (
-            <ItemCard
-              key={row._id}
-              index={i}
-              total={count}
-              open={openIds.has(row._id)}
-              onToggle={() => toggle(row._id)}
-              title={
-                itemTitle(row.data).trim() ? (
-                  <Highlight text={itemTitle(row.data)} query={canSearch ? query : ''} />
-                ) : (
-                  <span className="font-normal italic text-royal/40">New {noun} — click to fill in</span>
-                )
-              }
-              meta={itemMeta?.(row.data)}
-              problem={attempted ? itemProblem(row.data) : null}
-              autoFocus={justAdded === row._id}
-              onMove={(dir) => move(i, dir)}
-              onRemove={() => remove(row._id)}
-            >
-              {renderFields(row.data, (patch) => update(row._id, patch))}
-            </ItemCard>
+              <ItemCard
+                key={row._id}
+                index={i}
+                total={count}
+                open={openIds.has(row._id)}
+                onToggle={() => toggle(row._id)}
+                title={
+                  itemTitle(row.data).trim() ? (
+                    <Highlight text={itemTitle(row.data)} query={query} />
+                  ) : (
+                    <span className="font-normal italic text-royal/40">New {noun} — click to fill in</span>
+                  )
+                }
+                meta={itemMeta?.(row.data)}
+                problem={attempted ? itemProblem(row.data) : null}
+                autoFocus={justAdded === row._id}
+                active={isActive(row.data)}
+                noun={noun}
+                onToggleActive={() => update(row._id, { active: !isActive(row.data) } as Partial<T>)}
+                onMove={(dir) => move(i, dir)}
+                onRemove={() => remove(row._id)}
+              >
+                {renderFields(row.data, (patch) => update(row._id, patch))}
+              </ItemCard>
             ) : null,
           )}
 

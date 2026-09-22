@@ -105,9 +105,7 @@ export function DoctorBooking({
   }
 
   // ---- Step 1: pick a doctor ----
-  // A search box only earns its place once the list is long enough to need one.
-  const canSearch = (doctors?.length ?? 0) >= 4;
-  const shownDoctors = doctors?.filter((d) => matches(canSearch ? query : '', d.user.fullName, d.specialty, d.bio));
+  const shownDoctors = doctors?.filter((d) => matches(query, d.user.fullName, d.specialty, d.bio));
 
   return (
     <div className="interactive-card p-5">
@@ -125,10 +123,10 @@ export function DoctorBooking({
         </p>
       )}
 
-      {canSearch && (
-        <SearchBar className="mt-3" value={query} onChange={setQuery} placeholder="Search doctors by name or specialty…" />
+      <SearchBar className="mt-3" value={query} onChange={setQuery} placeholder="Search doctors by name or specialty…" />
+      {doctors && doctors.length > 0 && shownDoctors?.length === 0 && (
+        <NoResults query={query} onClear={() => setQuery('')} />
       )}
-      {canSearch && shownDoctors?.length === 0 && <NoResults query={query} onClear={() => setQuery('')} />}
 
       <div className="mt-3 space-y-2">
         {shownDoctors?.map((doc) => (

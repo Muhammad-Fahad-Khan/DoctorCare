@@ -8,7 +8,8 @@ function resolveIcon(name: string): LucideIcon {
 }
 
 export function FeaturesGrid({ content }: { content: FeaturesContent }) {
-  if (content.items.length === 0) return null;
+  const items = content.items.filter((i) => i.active !== false);
+  if (items.length === 0) return null;
 
   return (
     <section className="px-6 py-20">
@@ -19,7 +20,7 @@ export function FeaturesGrid({ content }: { content: FeaturesContent }) {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {content.items.map((item) => {
+          {items.map((item) => {
             const Icon = resolveIcon(item.icon);
             return (
               <div key={item.title} className="interactive-card group p-6">

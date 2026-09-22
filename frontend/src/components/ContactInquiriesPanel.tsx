@@ -42,10 +42,6 @@ export function ContactInquiriesPanel() {
   };
   const visible = matching.filter((i) => (filter === 'All' ? true : filter === 'New' ? !i.handled : i.handled));
 
-  if (inquiries === null && !error) {
-    return <p className="text-sm text-royal/60">Loading…</p>;
-  }
-
   return (
     <div>
       {error && (
@@ -54,128 +50,123 @@ export function ContactInquiriesPanel() {
         </p>
       )}
 
-      {inquiries && inquiries.length === 0 ? (
-        <div className="glass-card flex flex-col items-center gap-2 px-6 py-14 text-center">
+      {/* Search and filters are always visible, even before any inquiries have arrived. */}
+      <SearchBar value={query} onChange={setQuery} placeholder="Search by name, email or message…" />
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            onClick={() => setFilter(f)}
+            aria-pressed={filter === f}
+            className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ease-docucare ${
+              filter === f ? 'bg-royal text-white shadow-md' : 'bg-royal/5 text-royal/70 hover:bg-royal/10'
+            }`}
+          >
+            {f}
+            <span
+              className={`rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
+                filter === f ? 'bg-white/20' : 'bg-white text-royal/60'
+              }`}
+            >
+              {counts[f]}
+            </span>
+          </button>
+        ))}
+        <span className="ml-auto text-xs text-royal/50" aria-live="polite">
+          {query.trim() ? `${visible.length} result${visible.length === 1 ? '' : 's'}` : ''}
+        </span>
+      </div>
+
+      {inquiries === null ? (
+        <p className="mt-4 text-sm text-royal/50">Loading…</p>
+      ) : inquiries.length === 0 ? (
+        <div className="glass-card mt-4 flex flex-col items-center gap-2 px-6 py-14 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-soft text-magenta">
             <Inbox size={26} />
           </span>
           <p className="mt-2 text-base font-bold text-royal">No inquiries yet</p>
           <p className="text-sm text-royal/60">Messages sent from the Contact page will show up here.</p>
         </div>
-      ) : (
-        <>
-          <SearchBar value={query} onChange={setQuery} placeholder="Search by name, email or message…" />
-
-          {/* Status filter */}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFilter(f)}
-                aria-pressed={filter === f}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-300 ease-docucare ${
-                  filter === f ? 'bg-royal text-white shadow-md' : 'bg-royal/5 text-royal/70 hover:bg-royal/10'
-                }`}
-              >
-                {f}
-                <span
-                  className={`rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
-                    filter === f ? 'bg-white/20' : 'bg-white text-royal/60'
-                  }`}
-                >
-                  {counts[f]}
-                </span>
-              </button>
-            ))}
-            <span className="ml-auto text-xs text-royal/50" aria-live="polite">
-              {query.trim() ? `${visible.length} result${visible.length === 1 ? '' : 's'}` : ''}
-            </span>
-          </div>
-
-          {/* Results */}
-          {visible.length === 0 ? (
-            <div className="glass-card mt-4 flex flex-col items-center gap-2 px-6 py-12 text-center">
-              <SearchX size={26} className="text-royal/35" />
-              <p className="mt-1 text-sm font-semibold text-royal">
-                {query.trim() ? `Nothing matches “${query.trim()}”` : `No ${filter.toLowerCase()} inquiries`}
-              </p>
-              {(query || filter !== 'All') && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuery('');
-                    setFilter('All');
-                  }}
-                  className="mt-1 text-xs font-semibold text-magenta hover:underline"
-                >
-                  Clear search and filters
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {visible.map((inq) => (
-                <article
-                  key={inq.id}
-                  className={`glass-card border-l-4 p-5 ${inq.handled ? 'border-l-mint/60' : 'border-l-magenta'}`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="flex items-center gap-2 text-base font-bold text-royal">
-                        <Mail size={15} className="shrink-0 text-magenta" />
-                        <span className="truncate"><Highlight text={inq.name} query={query} /></span>
-                      </p>
-                      <a
-                        href={`mailto:${inq.email}`}
-                        className="mt-0.5 block truncate text-sm text-royal/70 hover:text-magenta hover:underline"
-                      >
-                        <Highlight text={inq.email} query={query} />
-                      </a>
-                    </div>
-
-                    <div className="flex flex-col items-end gap-1.5">
-                      {inq.handled ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-mint/15 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-                          <CheckCircle2 size={12} /> Handled
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-magenta/10 px-2.5 py-1 text-xs font-semibold text-magenta">
-                          <span className="h-1.5 w-1.5 rounded-full bg-magenta" /> New
-                        </span>
-                      )}
-                      <time dateTime={inq.createdAt} className="text-xs text-royal/50">
-                        {formatWhen(inq.createdAt)}
-                      </time>
-                    </div>
-                  </div>
-
-                  <p className="mt-3 whitespace-pre-line break-words text-sm leading-relaxed text-royal/85">
-                    <Highlight text={inq.message} query={query} />
-                  </p>
-
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <a
-                      href={`mailto:${inq.email}?subject=${encodeURIComponent('Re: your message to DocuCare')}`}
-                      className="btn-secondary !px-4 !py-2 text-xs"
-                    >
-                      <Reply size={13} /> Reply by email
-                    </a>
-                    {!inq.handled && (
-                      <button
-                        type="button"
-                        onClick={() => markHandled(inq.id)}
-                        className="btn-primary !px-4 !py-2 text-xs"
-                      >
-                        <Check size={13} /> Mark handled
-                      </button>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
+      ) : visible.length === 0 ? (
+        <div className="glass-card mt-4 flex flex-col items-center gap-2 px-6 py-12 text-center">
+          <SearchX size={26} className="text-royal/35" />
+          <p className="mt-1 text-sm font-semibold text-royal">
+            {query.trim() ? `Nothing matches “${query.trim()}”` : `No ${filter.toLowerCase()} inquiries`}
+          </p>
+          {(query || filter !== 'All') && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('');
+                setFilter('All');
+              }}
+              className="mt-1 text-xs font-semibold text-magenta hover:underline"
+            >
+              Clear search and filters
+            </button>
           )}
-        </>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {visible.map((inq) => (
+            <article
+              key={inq.id}
+              className={`glass-card border-l-4 p-5 ${inq.handled ? 'border-l-mint/60' : 'border-l-magenta'}`}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 text-base font-bold text-royal">
+                    <Mail size={15} className="shrink-0 text-magenta" />
+                    <span className="truncate">
+                      <Highlight text={inq.name} query={query} />
+                    </span>
+                  </p>
+                  <a
+                    href={`mailto:${inq.email}`}
+                    className="mt-0.5 block truncate text-sm text-royal/70 hover:text-magenta hover:underline"
+                  >
+                    <Highlight text={inq.email} query={query} />
+                  </a>
+                </div>
+
+                <div className="flex flex-col items-end gap-1.5">
+                  {inq.handled ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-mint/15 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                      <CheckCircle2 size={12} /> Handled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-magenta/10 px-2.5 py-1 text-xs font-semibold text-magenta">
+                      <span className="h-1.5 w-1.5 rounded-full bg-magenta" /> New
+                    </span>
+                  )}
+                  <time dateTime={inq.createdAt} className="text-xs text-royal/50">
+                    {formatWhen(inq.createdAt)}
+                  </time>
+                </div>
+              </div>
+
+              <p className="mt-3 whitespace-pre-line break-words text-sm leading-relaxed text-royal/85">
+                <Highlight text={inq.message} query={query} />
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <a
+                  href={`mailto:${inq.email}?subject=${encodeURIComponent('Re: your message to DocuCare')}`}
+                  className="btn-secondary !px-4 !py-2 text-xs"
+                >
+                  <Reply size={13} /> Reply by email
+                </a>
+                {!inq.handled && (
+                  <button type="button" onClick={() => markHandled(inq.id)} className="btn-primary !px-4 !py-2 text-xs">
+                    <Check size={13} /> Mark handled
+                  </button>
+                )}
+              </div>
+            </article>
+          ))}
+        </div>
       )}
     </div>
   );

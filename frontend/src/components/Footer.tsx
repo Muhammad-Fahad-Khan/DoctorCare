@@ -13,7 +13,7 @@ export function Footer() {
           <div>
             <Logo light />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-white/65">
-              Describe how you feel, get matched with a verified doctor, and meet them by video — all in one place.
+              Describe how you feel, get matched with a verified doctor, and meet them by video. All in one place.
             </p>
           </div>
 
@@ -45,7 +45,7 @@ export function Footer() {
           <p>© {new Date().getFullYear()} DocuCare. Open-source telemedicine.</p>
           <p className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="text-orchid" />
-            Not for emergencies — if it's urgent, call your local emergency number.
+            Not for emergencies - if it's urgent, call your local emergency number.
           </p>
         </div>
       </div>
